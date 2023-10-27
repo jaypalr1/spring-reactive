@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+
+  mongo-community:
+    container_name: MongoDbCommunity
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+    volumes:
+      - mongodb_data:/data/db:rw
+      - mongo_config_data:/data/configdb:rw
+    networks:
+      - mongodb-network
+
+  mongo-db-viewer:
+    container_name: MongoBbViewer
+    image: mongo-express:latest
+    depends_on:
+      - mongo-community
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo-community
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
+      - ME_CONFIG_BASICAUTH_USERNAME=root
+      - ME_CONFIG_BASICAUTH_PASSWORD=pass
+      - ME_CONFIG_MONGODB_PORT=27017
+    networks:
+      - mongodb-network
+
+volumes:
+  mongodb_data:
+    driver: local
+    external: false
+  mongo_config_data:
+    driver: local
+    external: false
+
+networks:
+  mongodb-network:
+    name: mongodb
+    driver: bridge
